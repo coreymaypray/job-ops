@@ -1,14 +1,14 @@
 # =============================================================================
-# Job Ops - Docker Compose Configuration
+# Sloth Jobs - Docker Compose Configuration
 # =============================================================================
 
 services:
-  job-ops:
+  sloth-jobs:
     build:
       context: .
       dockerfile: Dockerfile
     image: ghcr.io/coreymaypray/sloth-jobs:latest
-    container_name: job-ops
+    container_name: sloth-jobs
     ports:
       - "3005:3001"
     volumes:
