@@ -53,6 +53,9 @@ npm-debug.log*
 Dockerfile*
 docker-compose*
 
+# Scripts (dev-only seed/utility scripts)
+scripts/
+
 # Temporary files
 tmp
 temp

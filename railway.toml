@@ -1,0 +1,22 @@
+# =============================================================================
+# Sloth Jobs — Railway Deployment Configuration
+# =============================================================================
+# Deploy: Connect this repo to Railway → it auto-detects this config.
+# Volume: Mount a persistent volume at /app/data in the Railway dashboard.
+# Env vars: Set in Railway dashboard (LLM_API_KEY, BASIC_AUTH_USER, etc.)
+
+[build]
+# Use the existing multi-stage Dockerfile
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Health check — Railway uses this to verify the service is alive
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+
+# Restart on crash
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# Give the container time to build DB + start Express
+startCommand = "cd /app/orchestrator && npx tsx src/server/db/migrate.ts && npm run start"

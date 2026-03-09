@@ -58,7 +58,7 @@ const DEFAULT_VALUES: AutomaticRunValues = {
   minSuitabilityScore: 50,
   searchTerms: ["web developer"],
   runBudget: 200,
-  country: "united kingdom",
+  country: "usa",
   cityLocations: [],
 };
 

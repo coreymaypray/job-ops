@@ -1,0 +1,16 @@
+{
+  "name": "dice-extractor",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Dice.com extractor - fetches jobs via Dice MCP HTTP API",
+  "dependencies": {
+    "job-ops-shared": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "~5.9.0"
+  },
+  "scripts": {
+    "check:types": "tsc --noEmit"
+  }
+}
