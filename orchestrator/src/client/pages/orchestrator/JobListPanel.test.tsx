@@ -39,7 +39,9 @@ describe("JobListPanel", () => {
 
     expect(screen.getByText("No jobs found")).toBeInTheDocument();
     expect(
-      screen.getByText("Run the pipeline to discover and process new jobs."),
+      screen.getByText(
+        "Run the pipeline to discover and process new jobs. Slow and steady.",
+      ),
     ).toBeInTheDocument();
   });
 

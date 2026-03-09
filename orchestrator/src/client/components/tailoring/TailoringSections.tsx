@@ -433,7 +433,7 @@ export const TailoringSections: React.FC<TailoringSectionsProps> = ({
               <p className="mt-2 text-xs text-muted-foreground">
                 {tracerReadinessChecking
                   ? "Checking tracer-link readiness..."
-                  : "When enabled, outgoing resume links are rewritten to JobOps tracer links on the next PDF generation. Existing PDFs are unchanged."}
+                  : "When enabled, outgoing resume links are rewritten to Sloth Jobs tracer links on the next PDF generation. Existing PDFs are unchanged."}
               </p>
               {tracerEnableBlockedReason && !tracerLinksEnabled ? (
                 <p className="mt-2 text-xs text-destructive">

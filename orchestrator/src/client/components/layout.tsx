@@ -83,7 +83,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </SheetTrigger>
             <SheetContent side="left" className="w-64 flex flex-col">
               <SheetHeader>
-                <SheetTitle>JobOps</SheetTitle>
+                <SheetTitle>Sloth Jobs</SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-2">
                 {NAV_LINKS.map(({ to, label, icon: NavIcon, activePaths }) => (
@@ -108,7 +108,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                   <TooltipProvider>
                     <div className="flex flex-col items-start gap-2">
                       <a
-                        href="https://github.com/DaKheera47/job-ops/releases"
+                        href="https://github.com/coreymaypray/sloth-jobs/releases"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"

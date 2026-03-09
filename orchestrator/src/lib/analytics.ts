@@ -167,7 +167,7 @@ function getAnalyticsAppVersion(): string | null {
 }
 
 const DEDUPE_WINDOW_MS = 3_000;
-const ANALYTICS_USER_ID_STORAGE_KEY = "jobops.analytics.user_id.v1";
+const ANALYTICS_USER_ID_STORAGE_KEY = "slothJobs.analytics.user_id.v1";
 const recentEventCache = new Map<string, number>();
 let cachedAnalyticsUserId: string | null = null;
 const DISALLOWED_KEY_PARTS = [

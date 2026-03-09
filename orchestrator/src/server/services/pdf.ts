@@ -129,7 +129,7 @@ export async function generatePdf(
       logger.debug("Uploading temporary resume for PDF generation", { jobId });
       resumeId = await importRemoteResume({
         data: preparedResumeData,
-        name: `JobOps Tailored Resume ${jobId}`,
+        name: `Sloth Jobs Tailored Resume ${jobId}`,
         slug: "",
       });
 

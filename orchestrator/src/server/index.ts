@@ -47,7 +47,7 @@ async function startServer() {
     console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
-║   🚀 Job Ops Orchestrator                                 ║
+║   🦥 Sloth Jobs                                           ║
 ║                                                           ║
 ║   Server running at: http://localhost:${PORT}               ║
 ║                                                           ║

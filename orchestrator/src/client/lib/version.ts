@@ -1,7 +1,7 @@
 declare const __APP_VERSION__: string;
 
-const GITHUB_REPO = "DaKheera47/job-ops";
-const STORAGE_KEY = "jobops_version_check";
+const GITHUB_REPO = "coreymaypray/sloth-jobs";
+const STORAGE_KEY = "slothJobs_version_check";
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 function canUseStorage(): boolean {

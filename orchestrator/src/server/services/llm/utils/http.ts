@@ -24,8 +24,8 @@ export function buildHeaders(args: {
   }
 
   if (args.provider === "openrouter") {
-    headers["HTTP-Referer"] = "JobOps";
-    headers["X-Title"] = "JobOpsOrchestrator";
+    headers["HTTP-Referer"] = "SlothJobs";
+    headers["X-Title"] = "SlothJobs";
   }
 
   return headers;

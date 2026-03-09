@@ -63,7 +63,7 @@ export const App: React.FC = () => {
           {demoInfo.resetCadenceHours} hours.{" "}
           <a
             className="font-semibold underline underline-offset-2 hover:text-amber-50"
-            href="https://github.com/DaKheera47/job-ops"
+            href="https://github.com/coreymaypray/sloth-jobs"
             target="_blank"
             rel="noreferrer"
             onClick={() =>

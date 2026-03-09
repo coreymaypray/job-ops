@@ -499,7 +499,7 @@ export async function importResume(
     v5: async (creds) =>
       await v5.importResume(
         {
-          name: payload.name?.trim() || "JobOps Tailored Resume",
+          name: payload.name?.trim() || "Sloth Jobs Tailored Resume",
           slug: payload.slug?.trim() || "",
           data: payload.data,
         },

@@ -54,7 +54,7 @@ export async function simulatePipelineRun(
   const source = config?.sources?.[0] ?? "manual";
   const now = new Date();
   const isoNow = now.toISOString();
-  const jobUrl = `https://demo.job-ops.local/jobs/${run.id}`;
+  const jobUrl = `https://demo.sloth-jobs.local/jobs/${run.id}`;
   await jobsRepo.createJob({
     source: source as JobSource,
     title: "Demo Software Engineer",

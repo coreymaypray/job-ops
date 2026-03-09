@@ -87,7 +87,7 @@ describe("App demo banner", () => {
     const link = screen.getByRole("link", { name: /star .*repo/i });
     expect(link).toHaveAttribute(
       "href",
-      "https://github.com/DaKheera47/job-ops",
+      "https://github.com/coreymaypray/sloth-jobs",
     );
     fireEvent.click(link);
     expect(trackEvent).toHaveBeenCalledWith("star_repo_click", {

@@ -210,7 +210,7 @@ describe.sequential("Settings API routes", () => {
               {
                 id: "p1",
                 hidden: false,
-                name: "JobOps",
+                name: "SlothJobs",
                 period: "2024",
                 website: { url: "https://example.com", label: "Example" },
                 description: "Project description",
@@ -232,7 +232,7 @@ describe.sequential("Settings API routes", () => {
     expect(body.data.projects).toEqual([
       {
         id: "p1",
-        name: "JobOps",
+        name: "SlothJobs",
         description: "Project description",
         date: "2024",
         isVisibleInBase: true,

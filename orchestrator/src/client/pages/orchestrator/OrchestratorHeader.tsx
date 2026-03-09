@@ -1,4 +1,5 @@
 import { PageHeader, StatusIndicator } from "@client/components/layout";
+import { SlothLogo } from "@client/components/SlothLogo";
 import type { JobSource } from "@shared/types.js";
 import { Loader2, Play, Square } from "lucide-react";
 import type React from "react";
@@ -49,11 +50,9 @@ export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
 
   return (
     <PageHeader
-      icon={() => (
-        <img src="/favicon.png" alt="" className="size-8 rounded-lg" />
-      )}
-      title="Job Ops"
-      subtitle="Orchestrator"
+      icon={() => <SlothLogo className="size-6" />}
+      title="Sloth Jobs"
+      subtitle="Slow & steady wins the hunt"
       navOpen={navOpen}
       onNavOpenChange={onNavOpenChange}
       statusIndicator={

@@ -135,7 +135,7 @@ describe("OnboardingGate", () => {
 
     await waitFor(() => expect(api.validateLlm).toHaveBeenCalled());
     await waitFor(() => {
-      expect(screen.getByText("Welcome to Job Ops")).toBeInTheDocument();
+      expect(screen.getByText("Welcome to Sloth Jobs")).toBeInTheDocument();
     });
   });
 
@@ -163,7 +163,7 @@ describe("OnboardingGate", () => {
     render(<OnboardingGate />);
 
     await waitFor(() => expect(api.validateLlm).toHaveBeenCalled());
-    expect(screen.queryByText("Welcome to Job Ops")).not.toBeInTheDocument();
+    expect(screen.queryByText("Welcome to Sloth Jobs")).not.toBeInTheDocument();
   });
 
   it("skips LLM key validation for providers without API keys", async () => {
@@ -189,7 +189,7 @@ describe("OnboardingGate", () => {
     expect(api.validateLlm).not.toHaveBeenCalled();
     expect(api.validateRxresume).not.toHaveBeenCalled();
     await waitFor(() => {
-      expect(screen.getByText("Welcome to Job Ops")).toBeInTheDocument();
+      expect(screen.getByText("Welcome to Sloth Jobs")).toBeInTheDocument();
     });
     expect(screen.queryByText("LLM API key")).not.toBeInTheDocument();
   });

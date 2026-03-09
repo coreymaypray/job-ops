@@ -54,7 +54,7 @@ export const AUTOMATIC_PRESETS: Record<
   },
 };
 
-export const RUN_MEMORY_STORAGE_KEY = "jobops.pipeline.run-memory.v1";
+export const RUN_MEMORY_STORAGE_KEY = "slothJobs.pipeline.run-memory.v1";
 
 export interface AutomaticRunMemory {
   topN: number;

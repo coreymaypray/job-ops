@@ -4,12 +4,12 @@ import type React from "react";
 export const ProcessingState: React.FC = () => {
   return (
     <div className="flex h-full min-h-[300px] flex-col items-center justify-center gap-3 text-center px-4">
-      <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
       <div className="text-sm font-medium text-foreground/80">
         Processing job...
       </div>
       <p className="text-xs text-muted-foreground max-w-[220px]">
-        This job is currently being analyzed by the pipeline. Please wait.
+        Slow and steady. This job is being analyzed by the pipeline.
       </p>
     </div>
   );

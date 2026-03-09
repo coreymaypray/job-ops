@@ -599,9 +599,9 @@ export const OnboardingGate: React.FC = () => {
       >
         <div className="space-y-6 px-6 py-6 max-h-[calc(90vh-3.5rem)] overflow-y-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle>Welcome to Job Ops</AlertDialogTitle>
+            <AlertDialogTitle>Welcome to Sloth Jobs</AlertDialogTitle>
             <AlertDialogDescription>
-              Let's get your workspace ready. Add your keys and resume once,
+              Let's get your workspace ready. Slow and steady setup now means smooth sailing later. Add your keys and resume once,
               then the pipeline can run end-to-end.
             </AlertDialogDescription>
           </AlertDialogHeader>

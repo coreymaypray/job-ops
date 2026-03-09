@@ -45,7 +45,7 @@ describe("analytics", () => {
 
     const firstPayload = track.mock.calls[0][1] as Record<string, unknown>;
     const secondPayload = track.mock.calls[1][1] as Record<string, unknown>;
-    const storedId = window.localStorage.getItem("jobops.analytics.user_id.v1");
+    const storedId = window.localStorage.getItem("slothJobs.analytics.user_id.v1");
 
     expect(typeof firstPayload.analytics_user_id).toBe("string");
     expect(firstPayload.analytics_user_id).toBeTruthy();

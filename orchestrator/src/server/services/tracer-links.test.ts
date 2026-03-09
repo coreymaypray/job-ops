@@ -206,7 +206,7 @@ describe("tracer-links service", () => {
     expect(readiness.status).toBe("unconfigured");
     expect(readiness.canEnable).toBe(false);
     expect(readiness.publicBaseUrl).toBeNull();
-    expect(readiness.reason).toMatch(/no public jobops base url/i);
+    expect(readiness.reason).toMatch(/no public base url/i);
   });
 
   it("reports unavailable readiness for localhost/private origins", async () => {

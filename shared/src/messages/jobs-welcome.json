@@ -48,7 +48,7 @@
     {
       "id": "g008",
       "placement": "none",
-      "text": "The pipeline is quiet. Suspiciously quiet."
+      "text": "The branch is quiet. Suspiciously quiet. Even the sloth noticed."
     },
     {
       "id": "g009",
@@ -181,7 +181,7 @@
     {
       "id": "g034",
       "placement": "none",
-      "text": "Apply. Get auto rejected. Build character. Repeat."
+      "text": "Apply. Get auto rejected. Grip the branch tighter. Repeat. Sloths don't fall."
     },
     {
       "id": "g035",
@@ -232,7 +232,7 @@
     {
       "id": "g044",
       "placement": "none",
-      "text": "If you’re waiting for motivation, you’ll be waiting a while."
+      "text": "If you’re waiting for motivation, you’ll be waiting a while. Sloths wait, but they still climb."
     },
     {
       "id": "g045",
@@ -262,7 +262,7 @@
     {
       "id": "g050",
       "placement": "none",
-      "text": "Let’s be annoyingly consistent. It works. You know it works. Let’s do it."
+      "text": "Let’s be annoyingly consistent. Sloth-level persistent. It works. You know it works."
     },
 
     {
@@ -319,7 +319,7 @@
     {
       "id": "g061",
       "placement": "inline",
-      "text": "Welcome back, {name}. The pipeline yearns for activity."
+      "text": "Welcome back, {name}. The branch yearns for a sloth with ambition."
     },
     {
       "id": "g062",
@@ -339,7 +339,7 @@
     {
       "id": "g065",
       "placement": "inline",
-      "text": "Welcome back, {name}. jobops believes in you more than you do."
+      "text": "Welcome back, {name}. Sloth Jobs believes in you more than you do."
     },
     {
       "id": "g066",
@@ -391,6 +391,32 @@
       "id": "g075",
       "placement": "inline",
       "text": "Welcome back, {name}. This is where the luck gets manufactured."
+    },
+
+    {
+      "id": "s001",
+      "placement": "inline",
+      "text": "Hey {name}. Even sloths move when the right branch appears."
+    },
+    {
+      "id": "s002",
+      "placement": "none",
+      "text": "Slow and steady wins the job hunt. Let's climb."
+    },
+    {
+      "id": "s003",
+      "placement": "inline",
+      "text": "Welcome back, {name}. Your sloth senses are tingling."
+    },
+    {
+      "id": "s004",
+      "placement": "none",
+      "text": "No rush. Just relentless, methodical progress."
+    },
+    {
+      "id": "s005",
+      "placement": "inline",
+      "text": "{name} is back. Time to grip the branch and not let go."
     }
   ]
 }
