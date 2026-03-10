@@ -85,7 +85,7 @@ interface PendingSetup {
 /** At most 1 pending setup at a time. New request overwrites old. */
 let pendingSetup: { token: string; data: PendingSetup } | null = null;
 
-function storePendingSetup(data: PendingSetup): string {
+function storePendingSetup(data: Omit<PendingSetup, "expiresAt">): string {
   const token = randomBytes(32).toString("hex");
   pendingSetup = {
     token,
@@ -227,7 +227,6 @@ router.post(
       username: username.trim(),
       password,
       totpSecret,
-      expiresAt: 0, // set by storePendingSetup
     });
 
     ok(res, {
@@ -271,7 +270,7 @@ router.post(
     const totpResult = otpVerifySync({ secret: pending.totpSecret, token: totpCode });
     const isValid = typeof totpResult === "object" ? totpResult.valid : totpResult;
     if (!isValid) {
-      fail(res, badRequest("Invalid authentication code. Please try again."));
+      fail(res, badRequest("Invalid authentication code. Please restart setup."));
       return;
     }
 
@@ -380,7 +379,7 @@ router.post(
     // Verify TOTP
     const totpSecret = decrypt(adminRow.totpSecret, getEncryptionKey());
     const totpResult = otpVerifySync({ secret: totpSecret, token: totpCode });
-    const totpValid = totpResult.valid;
+    const totpValid = typeof totpResult === "object" ? totpResult.valid : totpResult;
     if (!totpValid) {
       const attempts = (adminRow.failedAttempts || 0) + 1;
       const updates: Record<string, unknown> = {
@@ -595,7 +594,7 @@ router.post(
     );
     const totpSecret = decrypt(adminRow.totpSecret, getEncryptionKey());
     const totpResult = otpVerifySync({ secret: totpSecret, token: parsed.data.totpCode });
-    const totpValid = totpResult.valid;
+    const totpValid = typeof totpResult === "object" ? totpResult.valid : totpResult;
 
     if (!passwordMatch || !totpValid) {
       logAuditEvent({
@@ -699,8 +698,6 @@ router.post(
 
     const { credential, credentialDeviceType, credentialBackedUp } =
       verification.registrationInfo;
-
-    const { createId } = await import("@paralleldrive/cuid2");
 
     db.insert(passkeys)
       .values({
