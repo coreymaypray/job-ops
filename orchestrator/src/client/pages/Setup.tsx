@@ -34,11 +34,34 @@ export function SetupPage({ onSetupComplete }: SetupPageProps) {
       return;
     }
 
+    // Basic client-side validation for immediate feedback
+    if (password.length < 12) {
+      setError("Password must be at least 12 characters");
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain an uppercase letter");
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError("Password must contain a lowercase letter");
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError("Password must contain a number");
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      setError("Password must contain a special character");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/auth/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username: username.trim(), password }),
       });
 
@@ -70,6 +93,7 @@ export function SetupPage({ onSetupComplete }: SetupPageProps) {
       const res = await fetch("/api/auth/setup/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ setupToken, totpCode }),
       });
 
