@@ -25,6 +25,7 @@ import {
 } from "@simplewebauthn/server";
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 import qrcode from "qrcode";
+import { createId } from "@paralleldrive/cuid2";
 import { z } from "zod";
 
 const router = Router();
@@ -178,6 +179,123 @@ router.get(
       .where(eq(passkeys.adminId, adminRow.id))
       .all();
     ok(res, { exists: true, hasPasskeys: passkeyRows.length > 0 });
+  }),
+);
+
+/**
+ * POST /api/auth/setup
+ * Public — one-time admin setup (step 1: credentials + QR code).
+ * Returns 404 once an admin exists.
+ */
+router.post(
+  "/setup",
+  asyncRoute(async (req, res) => {
+    // Guard: if admin exists, this endpoint is gone
+    if (getAdminRow()) {
+      res.status(404).json({ ok: false, error: { code: "not_found", message: "Not found" } });
+      return;
+    }
+
+    const parsed = setupSchema.safeParse(req.body);
+    if (!parsed.success) {
+      fail(res, badRequest("Invalid setup payload"));
+      return;
+    }
+
+    const { username, password } = parsed.data;
+
+    // Validate password complexity
+    const pwError = validatePassword(password);
+    if (pwError) {
+      fail(res, badRequest(pwError));
+      return;
+    }
+
+    // Generate TOTP secret
+    const totpSecret = generateSecret();
+    const otpAuthUrl = generateURI({
+      issuer: "SlothJobs",
+      label: username.trim(),
+      secret: totpSecret,
+    });
+
+    // Generate QR code as data URI
+    const qrCodeDataUri = await qrcode.toDataURL(otpAuthUrl);
+
+    // Store pending setup (password kept in memory only, never persisted unhashed)
+    const setupToken = storePendingSetup({
+      username: username.trim(),
+      password,
+      totpSecret,
+      expiresAt: 0, // set by storePendingSetup
+    });
+
+    ok(res, {
+      qrCodeDataUri,
+      manualKey: totpSecret,
+      setupToken,
+    });
+  }),
+);
+
+/**
+ * POST /api/auth/setup/verify
+ * Public — one-time admin setup (step 2: verify TOTP + create admin).
+ * Returns 404 once an admin exists.
+ */
+router.post(
+  "/setup/verify",
+  asyncRoute(async (req, res) => {
+    // Guard: if admin exists, this endpoint is gone
+    if (getAdminRow()) {
+      res.status(404).json({ ok: false, error: { code: "not_found", message: "Not found" } });
+      return;
+    }
+
+    const parsed = setupVerifySchema.safeParse(req.body);
+    if (!parsed.success) {
+      fail(res, badRequest("Invalid verification payload"));
+      return;
+    }
+
+    const { setupToken, totpCode } = parsed.data;
+
+    // Look up pending setup
+    const pending = consumePendingSetup(setupToken);
+    if (!pending) {
+      fail(res, badRequest("Setup session expired or invalid. Please start over."));
+      return;
+    }
+
+    // Verify TOTP code
+    const totpResult = otpVerifySync({ secret: pending.totpSecret, token: totpCode });
+    const isValid = typeof totpResult === "object" ? totpResult.valid : totpResult;
+    if (!isValid) {
+      fail(res, badRequest("Invalid authentication code. Please try again."));
+      return;
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(pending.password, 12);
+
+    // Encrypt TOTP secret
+    const encryptedTotp = encrypt(pending.totpSecret, getEncryptionKey());
+
+    // Insert admin row
+    db.insert(admin)
+      .values({
+        id: createId(),
+        username: pending.username,
+        passwordHash,
+        totpSecret: encryptedTotp,
+      })
+      .run();
+
+    logger.info("Admin account created via setup endpoint", {
+      username: pending.username,
+    });
+
+    ok(res, { success: true });
   }),
 );
 
