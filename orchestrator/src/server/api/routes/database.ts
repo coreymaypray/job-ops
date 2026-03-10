@@ -1,5 +1,7 @@
 import { isDemoMode, sendDemoBlocked } from "@server/config/demo";
 import { clearDatabase } from "@server/db/clear";
+import { logAuditEvent } from "@server/lib/audit";
+import { requireReauth } from "@server/middleware/auth";
 import { type Request, type Response, Router } from "express";
 
 export const databaseRouter = Router();
@@ -7,7 +9,7 @@ export const databaseRouter = Router();
 /**
  * DELETE /api/database - Clear all data from the database
  */
-databaseRouter.delete("/", async (_req: Request, res: Response) => {
+databaseRouter.delete("/", requireReauth, async (req: Request, res: Response) => {
   try {
     if (isDemoMode()) {
       return sendDemoBlocked(
@@ -18,6 +20,13 @@ databaseRouter.delete("/", async (_req: Request, res: Response) => {
     }
 
     const result = clearDatabase();
+
+    logAuditEvent({
+      action: "database.clear",
+      adminId: req.auth!.adminId,
+      ip: req.ip ?? null,
+      userAgent: req.header("user-agent") ?? null,
+    });
 
     res.json({
       success: true,

@@ -17,8 +17,11 @@ export type AuditAction =
   | "passkey.register"
   | "passkey.remove"
   | "database.clear"
+  | "backup.delete"
   | "backup.restore"
   | "backup.download"
+  | "jobs.bulk_delete_by_status"
+  | "jobs.bulk_delete_by_score"
   | "settings.credentials.update";
 
 export interface AuditEventInput {

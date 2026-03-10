@@ -10,6 +10,8 @@ import { logger } from "@infra/logger";
 import { sanitizeWebhookPayload } from "@infra/sanitize";
 import { setupSse, startSseHeartbeat, writeSseData } from "@infra/sse";
 import { isDemoMode, sendDemoBlocked } from "@server/config/demo";
+import { logAuditEvent } from "@server/lib/audit";
+import { requireReauth } from "@server/middleware/auth";
 import {
   generateFinalPdf,
   processJob,
@@ -1280,7 +1282,7 @@ jobsRouter.post("/:id/apply", async (req: Request, res: Response) => {
 /**
  * DELETE /api/jobs/status/:status - Clear jobs with a specific status
  */
-jobsRouter.delete("/status/:status", async (req: Request, res: Response) => {
+jobsRouter.delete("/status/:status", requireReauth, async (req: Request, res: Response) => {
   try {
     if (isDemoMode()) {
       return sendDemoBlocked(
@@ -1292,6 +1294,14 @@ jobsRouter.delete("/status/:status", async (req: Request, res: Response) => {
 
     const status = req.params.status as JobStatus;
     const count = await jobsRepo.deleteJobsByStatus(status);
+
+    logAuditEvent({
+      action: "jobs.bulk_delete_by_status",
+      adminId: req.auth!.adminId,
+      ip: req.ip ?? null,
+      userAgent: req.header("user-agent") ?? null,
+      metadata: { status, count },
+    });
 
     res.json({
       success: true,
@@ -1309,7 +1319,7 @@ jobsRouter.delete("/status/:status", async (req: Request, res: Response) => {
 /**
  * DELETE /api/jobs/score/:threshold - Clear jobs with score below threshold (excluding post-apply statuses)
  */
-jobsRouter.delete("/score/:threshold", async (req: Request, res: Response) => {
+jobsRouter.delete("/score/:threshold", requireReauth, async (req: Request, res: Response) => {
   try {
     if (isDemoMode()) {
       return sendDemoBlocked(
@@ -1337,6 +1347,14 @@ jobsRouter.delete("/score/:threshold", async (req: Request, res: Response) => {
     }
 
     const count = await jobsRepo.deleteJobsBelowScore(threshold);
+
+    logAuditEvent({
+      action: "jobs.bulk_delete_by_score",
+      adminId: req.auth!.adminId,
+      ip: req.ip ?? null,
+      userAgent: req.header("user-agent") ?? null,
+      metadata: { threshold, count },
+    });
 
     res.json({
       ok: true,

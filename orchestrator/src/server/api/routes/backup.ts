@@ -2,6 +2,8 @@ import { notFound } from "@infra/errors";
 import { fail } from "@infra/http";
 import { logger } from "@infra/logger";
 import { isDemoMode, sendDemoBlocked } from "@server/config/demo";
+import { logAuditEvent } from "@server/lib/audit";
+import { requireReauth } from "@server/middleware/auth";
 import {
   createBackup,
   deleteBackup,
@@ -69,7 +71,7 @@ backupRouter.post("/", async (_req: Request, res: Response) => {
 /**
  * DELETE /api/backups/:filename - Delete a specific backup
  */
-backupRouter.delete("/:filename", async (req: Request, res: Response) => {
+backupRouter.delete("/:filename", requireReauth, async (req: Request, res: Response) => {
   try {
     if (isDemoMode()) {
       return sendDemoBlocked(
@@ -93,6 +95,14 @@ backupRouter.delete("/:filename", async (req: Request, res: Response) => {
     }
 
     await deleteBackup(filename);
+
+    logAuditEvent({
+      action: "backup.delete",
+      adminId: req.auth!.adminId,
+      ip: req.ip ?? null,
+      userAgent: req.header("user-agent") ?? null,
+      metadata: { filename },
+    });
 
     res.json({
       success: true,
