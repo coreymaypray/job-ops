@@ -19,13 +19,17 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
   // Check on mount if admin has passkeys
   useEffect(() => {
-    fetch("/api/auth/check")
+    const controller = new AbortController();
+    fetch("/api/auth/check", { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
-        const d = data.data || data;
-        setHasPasskeys(d.hasPasskeys || false);
+        const d = data.data ?? data;
+        setHasPasskeys(d.hasPasskeys ?? false);
       })
-      .catch(() => setHasPasskeys(false));
+      .catch(() => {
+        if (!controller.signal.aborted) setHasPasskeys(false);
+      });
+    return () => controller.abort();
   }, []);
 
   const handlePasskeyLogin = useCallback(async () => {
@@ -38,7 +42,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       });
       if (!optRes.ok) throw new Error("Failed to get passkey options");
       const optData = await optRes.json();
-      const options = optData.data || optData;
+      const options = optData.data ?? optData;
 
       // Trigger browser/1Password prompt
       const assertion = await startAuthentication({ optionsJSON: options });
@@ -52,8 +56,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       });
 
       if (!verifyRes.ok) {
-        const errData = await verifyRes.json();
-        throw new Error(errData.error?.message || "Passkey verification failed");
+        let message = "Passkey verification failed";
+        try {
+          const errData = await verifyRes.json();
+          message = errData.error?.message || message;
+        } catch { /* non-JSON response */ }
+        throw new Error(message);
       }
 
       const verifyData = await verifyRes.json();
@@ -86,8 +94,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         }
 
         if (!res.ok) {
-          const errData = await res.json();
-          setError(errData.error?.message || "Invalid credentials");
+          let message = "Invalid credentials";
+          try {
+            const errData = await res.json();
+            message = errData.error?.message || message;
+          } catch { /* non-JSON response */ }
+          setError(message);
           return;
         }
 
@@ -114,6 +126,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         {hasPasskeys && (
           <>
             <Button
+              type="button"
               onClick={handlePasskeyLogin}
               disabled={loading}
               className="w-full"
@@ -170,7 +183,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </div>
 
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-destructive" role="alert">{error}</p>
           )}
 
           <Button type="submit" disabled={loading} className="w-full">
