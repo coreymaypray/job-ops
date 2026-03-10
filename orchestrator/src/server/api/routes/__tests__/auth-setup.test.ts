@@ -115,6 +115,10 @@ describe("Admin Setup Endpoints", () => {
         .send({ username: "admin", password: "Test12345678!" });
 
       expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        ok: false,
+        error: { code: "not_found" },
+      });
     });
 
     it("returns 400 for weak password", async () => {
@@ -126,6 +130,18 @@ describe("Admin Setup Endpoints", () => {
         .send({ username: "admin", password: "short" });
 
       expect(res.status).toBe(400);
+    });
+
+    it("returns 400 when password fails complexity rules", async () => {
+      mockAdminExists(false);
+      const app = await createApp();
+
+      const res = await request(app)
+        .post("/auth/setup")
+        .send({ username: "admin", password: "abcdefghijklm" }); // 13 chars, no uppercase/number/special
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toContain("uppercase");
     });
 
     it("returns QR code and setup token for valid request", async () => {
@@ -154,6 +170,10 @@ describe("Admin Setup Endpoints", () => {
         .send({ setupToken: "abc", totpCode: "123456" });
 
       expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        ok: false,
+        error: { code: "not_found" },
+      });
     });
 
     it("returns 400 for invalid/expired token", async () => {
@@ -170,8 +190,6 @@ describe("Admin Setup Endpoints", () => {
 
     it("returns 400 for invalid TOTP code", async () => {
       mockAdminExists(false);
-      const { verifySync } = await import("otplib");
-      (verifySync as ReturnType<typeof vi.fn>).mockReturnValueOnce({ valid: false, delta: null });
       const app = await createApp();
 
       // Step 1: initiate setup
@@ -179,6 +197,10 @@ describe("Admin Setup Endpoints", () => {
         .post("/auth/setup")
         .send({ username: "admin", password: "Test12345678!" });
       const { setupToken } = setupRes.body.data;
+
+      // Now override for the verify call
+      const { verifySync } = await import("otplib");
+      (verifySync as ReturnType<typeof vi.fn>).mockReturnValueOnce({ valid: false, delta: null });
 
       // Step 2: verify with wrong TOTP
       const res = await request(app)
@@ -215,6 +237,29 @@ describe("Admin Setup Endpoints", () => {
           passwordHash: "$2b$12$mockhash",
         }),
       );
+    });
+
+    it("rejects a setup token that has already been consumed", async () => {
+      mockAdminExists(false);
+      mockInsert();
+      const app = await createApp();
+
+      const setupRes = await request(app)
+        .post("/auth/setup")
+        .send({ username: "admin", password: "Test12345678!" });
+      const { setupToken } = setupRes.body.data;
+
+      // First verify succeeds
+      await request(app)
+        .post("/auth/setup/verify")
+        .send({ setupToken, totpCode: "123456" });
+
+      // Second verify with same token must fail
+      const res = await request(app)
+        .post("/auth/setup/verify")
+        .send({ setupToken, totpCode: "123456" });
+      expect(res.status).toBe(400);
+      expect(res.body.error.message).toContain("expired or invalid");
     });
   });
 });
