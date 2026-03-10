@@ -603,6 +603,57 @@ const migrations = [
        ORDER BY se.occurred_at DESC, se.id DESC
        LIMIT 1
      ), 'applied') = 'closed'`,
+
+  // Security: admin, passkeys, refresh_tokens, audit_log tables
+  `CREATE TABLE IF NOT EXISTS admin (
+    id TEXT PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    totp_secret TEXT NOT NULL,
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+
+  `CREATE TABLE IF NOT EXISTS passkeys (
+    id TEXT PRIMARY KEY,
+    admin_id TEXT NOT NULL,
+    credential_id TEXT NOT NULL UNIQUE,
+    public_key BLOB NOT NULL,
+    counter INTEGER NOT NULL DEFAULT 0,
+    device_type TEXT NOT NULL DEFAULT 'singleDevice',
+    backed_up INTEGER NOT NULL DEFAULT 0,
+    transports TEXT,
+    friendly_name TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
+  )`,
+
+  `CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id TEXT PRIMARY KEY,
+    admin_id TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (admin_id) REFERENCES admin(id) ON DELETE CASCADE
+  )`,
+
+  `CREATE TABLE IF NOT EXISTS audit_log (
+    id TEXT PRIMARY KEY,
+    action TEXT NOT NULL,
+    admin_id TEXT,
+    ip TEXT,
+    user_agent TEXT,
+    metadata TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_passkeys_admin_id ON passkeys(admin_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_refresh_tokens_admin_id ON refresh_tokens(admin_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action)`,
+  `CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at)`,
 ];
 
 console.log("🔧 Running database migrations...");
