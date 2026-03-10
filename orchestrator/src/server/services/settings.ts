@@ -22,6 +22,9 @@ function resolveDefaultLlmBaseUrl(provider: string): string {
   if (normalized === "gemini") {
     return "https://generativelanguage.googleapis.com";
   }
+  if (normalized === "anthropic") {
+    return "https://api.anthropic.com";
+  }
   return "https://openrouter.ai";
 }
 

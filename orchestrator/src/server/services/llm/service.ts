@@ -299,6 +299,7 @@ function normalizeProvider(
   if (normalized === "gemini") return "gemini";
   if (normalized === "lmstudio") return "lmstudio";
   if (normalized === "ollama") return "ollama";
+  if (normalized === "anthropic") return "anthropic";
   if (normalized && normalized !== "openrouter") {
     logger.warn("Unknown LLM provider, defaulting to openrouter", {
       normalized,
