@@ -94,7 +94,11 @@ function storePendingSetup(data: PendingSetup): string {
 }
 
 function consumePendingSetup(token: string): PendingSetup | null {
-  if (!pendingSetup || pendingSetup.token !== token) return null;
+  if (!pendingSetup) return null;
+  const match =
+    pendingSetup.token.length === token.length &&
+    timingSafeEqual(Buffer.from(pendingSetup.token), Buffer.from(token));
+  if (!match) return null;
   if (pendingSetup.data.expiresAt < Date.now()) {
     pendingSetup = null;
     return null;
