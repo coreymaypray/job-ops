@@ -49,12 +49,18 @@ export const App: React.FC = () => {
 
   const [authed, setAuthed] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    refreshAccessToken().then((token) => {
-      setAuthed(!!token);
-      setAuthChecked(true);
-    });
+    refreshAccessToken()
+      .then((token) => {
+        setAuthed(!!token);
+        setAuthChecked(true);
+      })
+      .catch(() => {
+        setAuthed(false);
+        setAuthChecked(true);
+      });
   }, []);
 
   // Determine a stable key for transitions to avoid unnecessary unmounts when switching sub-tabs
@@ -67,6 +73,7 @@ export const App: React.FC = () => {
   }, [location.pathname]);
 
   const handleLogout = async () => {
+    setLoggingOut(true);
     await logout();
     setAuthed(false);
   };
@@ -85,12 +92,13 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <div className="fixed right-4 top-4 z-50">
+      <div className="fixed right-6 top-3.5 z-50">
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={handleLogout}
+          disabled={loggingOut}
           className="h-8 w-8 text-muted-foreground hover:text-foreground"
         >
           <LogOut className="h-4 w-4" />
