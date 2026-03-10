@@ -28,6 +28,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export function createApp() {
   const app = express();
 
+  // Trust first proxy (Railway reverse proxy) — required for correct
+  // client-IP detection by express-rate-limit and req.ip.
+  app.set("trust proxy", 1);
+
   const handleTracerRedirect = async (
     req: express.Request,
     res: express.Response,

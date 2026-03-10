@@ -89,7 +89,7 @@ function storePendingSetup(data: Omit<PendingSetup, "expiresAt">): string {
   const token = randomBytes(32).toString("hex");
   pendingSetup = {
     token,
-    data: { ...data, expiresAt: Date.now() + 5 * 60 * 1000 },
+    data: { ...data, expiresAt: Date.now() + 10 * 60 * 1000 },
   };
   return token;
 }
