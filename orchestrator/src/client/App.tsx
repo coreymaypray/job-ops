@@ -14,6 +14,7 @@ import { refreshAccessToken, logout } from "@client/lib/auth";
 import { OnboardingGate } from "./components/OnboardingGate";
 import { useDemoInfo } from "./hooks/useDemoInfo";
 import { LoginPage } from "./pages/Login";
+import { SetupPage } from "./pages/Setup";
 import { GmailOauthCallbackPage } from "./pages/GmailOauthCallbackPage";
 import { HomePage } from "./pages/HomePage";
 import { InProgressBoardPage } from "./pages/InProgressBoardPage";
@@ -50,14 +51,27 @@ export const App: React.FC = () => {
   const [authed, setAuthed] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [adminExists, setAdminExists] = useState<boolean | null>(null);
 
   useEffect(() => {
-    refreshAccessToken()
-      .then((token) => {
-        setAuthed(!!token);
-        setAuthChecked(true);
+    // First check if admin exists
+    fetch("/api/auth/check")
+      .then((r) => r.json())
+      .then((data) => {
+        const d = data.data ?? data;
+        setAdminExists(d.exists ?? true);
+        if (!d.exists) {
+          setAuthChecked(true);
+          return;
+        }
+        // Admin exists — try to refresh token
+        return refreshAccessToken().then((token) => {
+          setAuthed(!!token);
+          setAuthChecked(true);
+        });
       })
       .catch(() => {
+        setAdminExists(true); // assume exists on error
         setAuthed(false);
         setAuthChecked(true);
       });
@@ -83,6 +97,17 @@ export const App: React.FC = () => {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
+    );
+  }
+
+  if (adminExists === false) {
+    return (
+      <SetupPage
+        onSetupComplete={() => {
+          setAdminExists(true);
+          setAuthed(false); // force login after setup
+        }}
+      />
     );
   }
 
