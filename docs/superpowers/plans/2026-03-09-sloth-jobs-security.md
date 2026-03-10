@@ -68,14 +68,14 @@ orchestrator/src/client/api/client.ts                 # Replace Basic Auth with 
 
 ```bash
 cd /Users/coreymaypray/Desktop/Projects/job-ops/orchestrator
-npm install @simplewebauthn/server@11 @simplewebauthn/browser@11 otplib bcrypt jsonwebtoken helmet express-rate-limit
+npm install @simplewebauthn/server@11 @simplewebauthn/browser@11 otplib bcrypt jsonwebtoken helmet express-rate-limit cookie-parser qrcode-terminal
 ```
 
 - [ ] **Step 2: Install dev dependencies (types)**
 
 ```bash
 cd /Users/coreymaypray/Desktop/Projects/job-ops/orchestrator
-npm install -D @types/bcrypt @types/jsonwebtoken
+npm install -D @types/bcrypt @types/jsonwebtoken @types/cookie-parser @types/qrcode-terminal supertest @types/supertest
 ```
 
 - [ ] **Step 3: Verify installation**
@@ -221,11 +221,26 @@ export const auditLog = sqliteTable(
       .notNull()
       .default(sql`(datetime('now'))`),
   },
-  (table) => [index("idx_audit_log_action").on(table.action)],
+  (table) => ({
+    actionIndex: index("idx_audit_log_action").on(table.action),
+  }),
 );
 ```
 
 Note: You will also need to add `blob` to the imports from `drizzle-orm/sqlite-core` at the top of the file if not already imported.
+
+After the table definitions, add type exports to match the existing codebase convention:
+
+```typescript
+export type AdminRow = typeof admin.$inferSelect;
+export type NewAdminRow = typeof admin.$inferInsert;
+export type PasskeyRow = typeof passkeys.$inferSelect;
+export type NewPasskeyRow = typeof passkeys.$inferInsert;
+export type RefreshTokenRow = typeof refreshTokens.$inferSelect;
+export type NewRefreshTokenRow = typeof refreshTokens.$inferInsert;
+export type AuditLogRow = typeof auditLog.$inferSelect;
+export type NewAuditLogRow = typeof auditLog.$inferInsert;
+```
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -312,7 +327,7 @@ Expected: Migration completes without errors. New tables created.
 
 - [ ] **Step 3: Verify tables exist**
 
-Run: `cd /Users/coreymaypray/Desktop/Projects/job-ops/orchestrator && npx tsx -e "import Database from 'better-sqlite3'; const db = new Database(process.env.DB_PATH || 'data/sloth-jobs.db'); console.log(db.prepare(\"SELECT name FROM sqlite_master WHERE type='table' AND name IN ('admin','passkeys','refresh_tokens','audit_log')\").all());"`
+Run: `cd /Users/coreymaypray/Desktop/Projects/job-ops/orchestrator && npx tsx -e "import Database from 'better-sqlite3'; const db = new Database(process.env.DB_PATH || 'data/jobs.db'); console.log(db.prepare(\"SELECT name FROM sqlite_master WHERE type='table' AND name IN ('admin','passkeys','refresh_tokens','audit_log')\").all());"`
 Expected: Array with 4 table entries.
 
 - [ ] **Step 4: Commit**
@@ -1180,8 +1195,8 @@ import {
 } from "@server/lib/tokens";
 import { requireAuth } from "@server/middleware/auth";
 import { db } from "@server/db";
-import { admin, passkeys, refreshTokens } from "@server/db/schema";
-import { eq, and } from "drizzle-orm";
+import { admin, passkeys, refreshTokens, auditLog } from "@server/db/schema";
+import { eq, and, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { authenticator } from "otplib";
 import { Router } from "express";
@@ -1881,12 +1896,7 @@ router.post(
 );
 
 export { router as authRouter };
-
-// Need to add sql import at top
-import { sql } from "drizzle-orm";
 ```
-
-Note: The `sql` import from `drizzle-orm` is needed for the audit log query's `ORDER BY`. Add it to the existing `drizzle-orm` import at the top.
 
 - [ ] **Step 3: Run type check**
 
@@ -1910,15 +1920,9 @@ git commit -m "feat(security): add auth API routes (login, webauthn, refresh, re
 **Files:**
 - Create: `orchestrator/src/server/scripts/setup-admin.ts`
 
-- [ ] **Step 1: Install CLI dependencies**
+- [ ] **Step 1: Implement setup-admin.ts**
 
-```bash
-cd /Users/coreymaypray/Desktop/Projects/job-ops/orchestrator
-npm install qrcode-terminal readline
-npm install -D @types/qrcode-terminal
-```
-
-- [ ] **Step 2: Implement setup-admin.ts**
+> Note: `qrcode-terminal` and `@types/qrcode-terminal` were already installed in Task 1. `readline` is a Node.js built-in (`node:readline`) — no npm install needed.
 
 Create `orchestrator/src/server/scripts/setup-admin.ts`:
 
@@ -2144,6 +2148,7 @@ Create `orchestrator/src/server/scripts/unlock-admin.ts`:
 import "../db/index";
 import { db } from "../db/index";
 import { admin } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 async function main() {
   console.log("\n🦥 Sloth Jobs — Unlock Admin\n");
@@ -2166,8 +2171,6 @@ async function main() {
 
   console.log(`✅ Account '${row.username}' unlocked. Failed attempts reset to 0.\n`);
 }
-
-import { eq } from "drizzle-orm";
 
 main().catch((err) => {
   console.error("Unlock failed:", err);
@@ -2210,6 +2213,7 @@ In `orchestrator/src/server/app.ts`:
 2. **Add imports** at the top:
 
 ```typescript
+import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import { requireAuth, requireReauth } from "./middleware/auth";
 import { apiLimiter } from "./middleware/rateLimiter";
@@ -2260,7 +2264,7 @@ app.use(cookieParser());
 app.use("/api", apiLimiter);
 ```
 
-Note: Install `cookie-parser`: `npm install cookie-parser && npm install -D @types/cookie-parser`
+> Note: `cookie-parser` and `@types/cookie-parser` were already installed in Task 1.
 
 4. **Fix PDF path traversal** in the PDF static serving section. Replace the raw `express.static(pdfDir)` with a safe handler:
 
@@ -2316,20 +2320,16 @@ import { requireAuth, requireReauth } from "../middleware/auth";
 import { loginLimiter, webauthnLimiter, reauthLimiter } from "../middleware/rateLimiter";
 ```
 
-2. **Mount auth routes** (public — no JWT middleware):
+2. **Mount rate limiters BEFORE the auth router** (Express middleware runs in registration order):
 
 ```typescript
-// Auth routes (public endpoints with rate limiters)
-apiRouter.use("/auth", authRouter);
-```
-
-Add rate limiters to specific auth sub-routes. Since the auth router handles its own paths, apply rate limiters in the auth router file or as prefix middleware. The simplest approach is to apply them in `app.ts` or as route-level middleware. For this plan, add them in `routes.ts`:
-
-```typescript
-// Rate limiters for auth endpoints
+// Rate limiters for auth endpoints — MUST come before authRouter mount
 apiRouter.use("/auth/login", loginLimiter);
 apiRouter.use("/auth/webauthn", webauthnLimiter);
 apiRouter.use("/auth/reauth", reauthLimiter);
+
+// Auth routes (public endpoints — no JWT middleware)
+apiRouter.use("/auth", authRouter);
 ```
 
 3. **Wrap existing route mounts with `requireAuth`**:
@@ -2405,13 +2405,12 @@ router.delete("/", requireReauth, asyncRoute(async (req, res) => {
 }));
 ```
 
-- [ ] **Step 2: Protect backup download and restore with requireReauth**
+- [ ] **Step 2: Add requireReauth and audit logging to backup delete**
 
 In `orchestrator/src/server/api/routes/backup.ts`, add `requireReauth` to:
-- `GET /api/backups/:filename/download` (if it exists, or the download route)
-- `POST /api/backups/:filename/restore`
+- `DELETE /api/backups/:filename` — this is the destructive operation; add audit logging for `backup.delete` event.
 
-Import and add audit logging for `backup.download` and `backup.restore` events.
+> **Note:** The backup router only has list (GET), create (POST), and delete (DELETE) endpoints. There are no download or restore routes. If you add those later, protect them with `requireReauth` too.
 
 - [ ] **Step 3: Protect bulk delete routes in jobs.ts with requireReauth**
 
@@ -2462,7 +2461,7 @@ On read (GET /api/settings):
 // (or return a masked placeholder — never return the actual password to the client)
 ```
 
-The exact implementation depends on how settings are stored. Look at the settings service to understand the storage pattern, then apply encryption/decryption at the service boundary.
+**Implementation:** Explore `orchestrator/src/server/api/routes/settings.ts` and its service layer to find where credentials are written to and read from the database. Apply `encrypt()` before writes and `decrypt()` after reads at the service boundary. For the client, return a boolean `hasRxResumePassword: true` instead of the actual encrypted value — never send the ciphertext to the frontend.
 
 - [ ] **Step 2: Add audit logging for credential updates**
 
@@ -2623,10 +2622,20 @@ In `orchestrator/src/client/api/client.ts`:
 2. **Import** the auth utilities:
 
 ```typescript
-import { authFetch, getAccessToken, setAccessToken, refreshAccessToken } from "../lib/auth";
+import { authFetch, getAccessToken, setAccessToken, refreshAccessToken } from "@client/lib/auth";
 ```
 
-3. **Replace** the `fetchApi` function to use `authFetch` instead of raw `fetch`. The key change: instead of Base64-encoding Basic Auth credentials, the function uses `Authorization: Bearer <token>` via `authFetch`.
+3. **Replace** the core of `fetchApi` to delegate to `authFetch`. The existing function signature should stay the same for callers, but internally replace the `fetch()` call and Basic Auth header logic with:
+
+```typescript
+const res = await authFetch(url, {
+  method: options.method || "GET",
+  headers: options.headers,
+  body: options.body ? JSON.stringify(options.body) : undefined,
+});
+```
+
+Remove the 401 retry loop (authFetch handles refresh internally). Keep the response parsing and error handling logic.
 
 4. **For SSE streams**, modify `streamSseEvents` to include the JWT as a query parameter:
 
@@ -2664,12 +2673,12 @@ git commit -m "feat(security): replace Basic Auth with JWT in API client"
 Create `orchestrator/src/client/pages/Login.tsx`:
 
 ```tsx
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { startAuthentication } from "@simplewebauthn/browser";
-import { setAccessToken } from "../lib/auth";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { setAccessToken } from "@client/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -2684,7 +2693,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [hasPasskeys, setHasPasskeys] = useState<boolean | null>(null);
 
   // Check on mount if admin has passkeys
-  useState(() => {
+  useEffect(() => {
     fetch("/api/auth/check")
       .then((r) => r.json())
       .then((data) => {
@@ -2692,7 +2701,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         setHasPasskeys(d.hasPasskeys || false);
       })
       .catch(() => setHasPasskeys(false));
-  });
+  }, []);
 
   const handlePasskeyLogin = useCallback(async () => {
     setError("");
@@ -2874,7 +2883,7 @@ Create `orchestrator/src/client/components/ReauthModal.tsx`:
 
 ```tsx
 import { useState, useCallback } from "react";
-import { authFetch } from "../lib/auth";
+import { authFetch } from "@client/lib/auth";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -2883,10 +2892,10 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-} from "./ui/alert-dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ReauthModalProps {
   open: boolean;
@@ -3012,8 +3021,8 @@ In `orchestrator/src/client/App.tsx`:
 1. **Import** the Login page and auth utilities:
 
 ```typescript
-import { LoginPage } from "./pages/Login";
-import { isAuthenticated, setAccessToken, refreshAccessToken } from "./lib/auth";
+import { LoginPage } from "@client/pages/Login";
+import { isAuthenticated, setAccessToken, refreshAccessToken } from "@client/lib/auth";
 ```
 
 2. **Add auth state** at the top of the App component:
@@ -3048,7 +3057,7 @@ if (!authed) {
 4. **Add logout button** to the app header/nav (wherever the app layout is). The button calls:
 
 ```typescript
-import { logout } from "./lib/auth";
+import { logout } from "@client/lib/auth";
 
 const handleLogout = async () => {
   await logout();
@@ -3089,9 +3098,9 @@ Create `orchestrator/src/client/pages/SecuritySettings.tsx`:
 ```tsx
 import { useState, useEffect, useCallback } from "react";
 import { startRegistration } from "@simplewebauthn/browser";
-import { authFetch } from "../lib/auth";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import { authFetch } from "@client/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -3099,7 +3108,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
+} from "@/components/ui/table";
 
 interface Passkey {
   id: string;
@@ -3323,7 +3332,11 @@ Expected: Vite build succeeds.
 
 ```bash
 cd /Users/coreymaypray/Desktop/Projects/job-ops/orchestrator
-git add -A
+# Stage only the specific files that were modified in this task
+git status
+# Then add files explicitly, e.g.:
+# git add src/client/App.tsx src/client/pages/Login.tsx ...
+# Never use `git add -A` — review changed files first
 git commit -m "feat(security): final integration and cleanup"
 ```
 
