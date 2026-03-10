@@ -2,14 +2,18 @@
  * Main App component.
  */
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
+import { LogOut } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { trackEvent } from "@/lib/analytics";
+import { refreshAccessToken, logout } from "@client/lib/auth";
 import { OnboardingGate } from "./components/OnboardingGate";
 import { useDemoInfo } from "./hooks/useDemoInfo";
+import { LoginPage } from "./pages/Login";
 import { GmailOauthCallbackPage } from "./pages/GmailOauthCallbackPage";
 import { HomePage } from "./pages/HomePage";
 import { InProgressBoardPage } from "./pages/InProgressBoardPage";
@@ -43,6 +47,16 @@ export const App: React.FC = () => {
   const nodeRef = useRef<HTMLDivElement>(null);
   const demoInfo = useDemoInfo();
 
+  const [authed, setAuthed] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    refreshAccessToken().then((token) => {
+      setAuthed(!!token);
+      setAuthChecked(true);
+    });
+  }, []);
+
   // Determine a stable key for transitions to avoid unnecessary unmounts when switching sub-tabs
   const pageKey = React.useMemo(() => {
     const firstSegment = location.pathname.split("/")[1] || "jobs";
@@ -52,8 +66,37 @@ export const App: React.FC = () => {
     return firstSegment;
   }, [location.pathname]);
 
+  const handleLogout = async () => {
+    await logout();
+    setAuthed(false);
+  };
+
+  if (!authChecked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!authed) {
+    return <LoginPage onLogin={() => setAuthed(true)} />;
+  }
+
   return (
     <>
+      <div className="fixed right-4 top-4 z-50">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={handleLogout}
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className="h-4 w-4" />
+          <span className="sr-only">Sign out</span>
+        </Button>
+      </div>
       <OnboardingGate />
       {demoInfo?.demoMode && (
         <div className="w-full border-b border-amber-400/50 bg-amber-500/20 px-4 py-2 text-center text-xs text-amber-100 backdrop-blur">
