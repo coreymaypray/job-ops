@@ -1,6 +1,6 @@
-# Contributing to JobOps
+# Contributing to SlothJobs
 
-Thanks for helping improve JobOps.
+Thanks for helping improve SlothJobs.
 
 This guide is intentionally short and GitHub-friendly. It focuses on contributor workflow and links to the existing docs for setup, style, and troubleshooting so we do not duplicate documentation.
 

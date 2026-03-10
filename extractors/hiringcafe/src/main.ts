@@ -2,11 +2,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { launchOptions } from "camoufox-js";
-import { parseSearchTerms } from "job-ops-shared/utils/search-terms";
+import { parseSearchTerms } from "sloth-jobs-shared/utils/search-terms";
 import {
   toNumberOrNull,
   toStringOrNull,
-} from "job-ops-shared/utils/type-conversion";
+} from "sloth-jobs-shared/utils/type-conversion";
 import { firefox, type Page } from "playwright";
 import {
   normalizeCountryKey,
@@ -251,7 +251,7 @@ async function resolveCityLocationContext(args: {
     const response = await fetch(url, {
       headers: {
         Accept: "application/json",
-        "User-Agent": "job-ops-hiringcafe-extractor/1.0",
+        "User-Agent": "sloth-jobs-hiringcafe-extractor/1.0",
       },
       signal: AbortSignal.timeout(8_000),
     });

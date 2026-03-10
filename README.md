@@ -1,20 +1,19 @@
-# JobOps: Your Ironman Suit for Job Hunting
+# Sloth Jobs: Your Ironman Suit for Job Hunting
 
 
-[![Stars](https://img.shields.io/github/stars/DaKheera47/job-ops?style=social)](https://github.com/DaKheera47/job-ops)
-[![GHCR](https://img.shields.io/badge/docker-ghcr.io-blue?logo=docker&logoColor=white)](https://github.com/DaKheera47/job-ops/pkgs/container/job-ops)
-[![Release](https://github.com/DaKheera47/job-ops/actions/workflows/ghcr.yml/badge.svg)](https://github.com/DaKheera47/job-ops/actions/workflows/ghcr.yml)
-[![Contributors](https://img.shields.io/github/contributors-anon/dakheera47/job-ops)](Contributors)
+[![Stars](https://img.shields.io/github/stars/coreymaypray/sloth-jobs?style=social)](https://github.com/coreymaypray/sloth-jobs)
+[![GHCR](https://img.shields.io/badge/docker-ghcr.io-blue?logo=docker&logoColor=white)](https://github.com/coreymaypray/sloth-jobs/pkgs/container/sloth-jobs)
+[![Release](https://github.com/coreymaypray/sloth-jobs/actions/workflows/ghcr.yml/badge.svg)](https://github.com/coreymaypray/sloth-jobs/actions/workflows/ghcr.yml)
 
 
 Scrapes major job boards (LinkedIn, Indeed, Glassdoor & more), AI-scores suitability, tailors resumes (RxResume), and tracks application emails automatically.
 
-You still apply to every job yourself. JobOps just finds jobs, makes sure you're applying to the right ones with a tailored CV, and not losing track of where you're at.
+You still apply to every job yourself. Sloth Jobs just finds jobs, makes sure you're applying to the right ones with a tailored CV, and not losing track of where you're at.
 
 <img width="1200" height="600" alt="image" src="https://github.com/user-attachments/assets/7328102a-530d-4bd0-af0b-ce8a1b864f41" />
 
 
-Self-hosted. Docker-based.
+Self-hosted. Docker-based. Forked from [DaKheera47/job-ops](https://github.com/DaKheera47/job-ops).
 
 ## 40s Demo: Crawl → Score → PDF → Track
 
@@ -22,7 +21,7 @@ Self-hosted. Docker-based.
 <summary>
 Pipeline Demo
 </summary>
-  
+
   https://github.com/user-attachments/assets/5b9157a9-13b0-4ec6-9bd2-a39dbc2b11c5
 </details>
 
@@ -31,13 +30,13 @@ Pipeline Demo
 <summary>
 Apply & Track
 </summary>
-  
+
   https://github.com/user-attachments/assets/06e5e782-47f5-42d0-8b28-b89102d7ea1b
 </details>
 
 ## Documentation (Start Here)
 
-JobOps ships with full docs for setup, architecture, extractors, and troubleshooting.
+Sloth Jobs ships with full docs for setup, architecture, extractors, and troubleshooting.
 
 If you want the serious view of the project, start here:
 
@@ -60,8 +59,8 @@ Prefer guided setup? Follow the [Self-Hosting Guide](https://jobops.dakheera47.c
 
 ```bash
 # 1. Download
-git clone https://github.com/DaKheera47/job-ops.git
-cd job-ops
+git clone https://github.com/coreymaypray/sloth-jobs.git
+cd sloth-jobs
 
 # 2. Start (Pulls pre-built image)
 docker compose up -d
@@ -71,7 +70,7 @@ docker compose up -d
 
 ```
 
-## Why JobOps?
+## Why Sloth Jobs?
 
 * **Universal Scraping**: Supports **LinkedIn, Indeed, Glassdoor, Adzuna, Hiring Café, Gradcracker, UK Visa Jobs**.
 * **AI Scoring**: Ranks jobs by fit against *your* profile using your preferred LLM (OpenRouter/OpenAI/Gemini).
@@ -109,18 +108,6 @@ Connect Gmail → AI routes emails to your applied jobs.
 * "Unfortunately..." → **Status: Rejected** (Auto-updated)
 
 See [post-application tracking docs](https://jobops.dakheera47.com/docs/features/post-application-tracking) for setup.
-
-**Note on Analytics**: The alpha version includes anonymous analytics (Umami) to help debug performance. To opt-out, block `umami.dakheera47.com` in your firewall/DNS.
-
-## Star History
-
-<a href="https://www.star-history.com/#DaKheera47/job-ops&type=date&legend=top-left">
-<picture>
-<source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=DaKheera47/job-ops&type=date&theme=dark&legend=top-left" />
-<source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=DaKheera47/job-ops&type=date&legend=top-left" />
-<img alt="Star History Chart" src="https://api.star-history.com/svg?repos=DaKheera47/job-ops&type=date&legend=top-left" />
-</picture>
-</a>
 
 ## License
 

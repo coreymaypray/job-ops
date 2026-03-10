@@ -1,5 +1,5 @@
 /**
- * Shared types for the job-ops orchestrator.
+ * Shared types for the sloth-jobs orchestrator.
  *
  * Types are organized by domain in the `./types/` subdirectory.
  * This file re-exports everything for backward compatibility.

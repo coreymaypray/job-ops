@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Dice.com extractor - fetches jobs via Dice MCP HTTP API",
   "dependencies": {
-    "job-ops-shared": "^1.0.0"
+    "sloth-jobs-shared": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

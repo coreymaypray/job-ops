@@ -1,5 +1,5 @@
 {
-  "name": "job-ops",
+  "name": "sloth-jobs",
   "private": true,
   "workspaces": [
     "orchestrator",

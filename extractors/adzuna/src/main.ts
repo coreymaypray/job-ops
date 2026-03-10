@@ -1,10 +1,10 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { parseSearchTerms } from "job-ops-shared/utils/search-terms";
+import { parseSearchTerms } from "sloth-jobs-shared/utils/search-terms";
 import {
   toNumberOrNull,
   toStringOrNull,
-} from "job-ops-shared/utils/type-conversion";
+} from "sloth-jobs-shared/utils/type-conversion";
 
 const API_BASE = "https://api.adzuna.com/v1/api";
 const JOBOPS_PROGRESS_PREFIX = "JOBOPS_PROGRESS ";

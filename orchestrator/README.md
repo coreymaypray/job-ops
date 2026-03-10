@@ -1,4 +1,4 @@
-# Job Ops Orchestrator
+# Sloth Jobs Orchestrator
 
 A unified orchestrator for the job application pipeline. Discovers jobs, scores them for suitability, generates tailored resumes, and provides a UI to manage applications.
 
