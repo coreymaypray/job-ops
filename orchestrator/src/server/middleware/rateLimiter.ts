@@ -27,6 +27,15 @@ export const reauthLimiter = rateLimit({
   message: { ok: false, error: { code: "rate_limited", message: "Too many re-auth attempts. Try again later." } },
 });
 
+/** Admin setup endpoints: 3 attempts per 15 minutes */
+export const setupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: { code: "rate_limited", message: "Too many setup attempts. Try again later." } },
+});
+
 /** General API: 120 requests per minute */
 export const apiLimiter = rateLimit({
   windowMs: 60 * 1000,

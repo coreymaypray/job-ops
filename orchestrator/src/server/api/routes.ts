@@ -20,7 +20,7 @@ import { visaSponsorsRouter } from "./routes/visa-sponsors";
 import { webhookRouter } from "./routes/webhook";
 import { authRouter } from "./routes/auth";
 import { requireAuth } from "../middleware/auth";
-import { loginLimiter, webauthnLimiter, reauthLimiter } from "../middleware/rateLimiter";
+import { loginLimiter, webauthnLimiter, reauthLimiter, setupLimiter } from "../middleware/rateLimiter";
 
 export const apiRouter = Router();
 
@@ -28,6 +28,7 @@ export const apiRouter = Router();
 apiRouter.use("/auth/login", loginLimiter);
 apiRouter.use("/auth/webauthn", webauthnLimiter);
 apiRouter.use("/auth/reauth", reauthLimiter);
+apiRouter.use("/auth/setup", setupLimiter);
 
 // Auth routes (public endpoints — no JWT middleware)
 apiRouter.use("/auth", authRouter);

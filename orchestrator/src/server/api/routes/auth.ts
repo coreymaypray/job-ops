@@ -1,9 +1,9 @@
-import { createHash, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { unauthorized, forbidden, badRequest } from "@infra/errors";
 import { asyncRoute, fail, ok } from "@infra/http";
 import { logger } from "@infra/logger";
 import { logAuditEvent } from "@server/lib/audit";
-import { decrypt } from "@server/lib/encryption";
+import { decrypt, encrypt } from "@server/lib/encryption";
 import {
   issueAccessToken,
   issueRefreshToken,
@@ -15,7 +15,7 @@ import { db } from "@server/db";
 import { admin, passkeys, refreshTokens, auditLog } from "@server/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
-import { verifySync as otpVerifySync } from "otplib";
+import { generateSecret, generateURI, verifySync as otpVerifySync } from "otplib";
 import { Router } from "express";
 import {
   generateRegistrationOptions,
@@ -24,6 +24,7 @@ import {
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
+import qrcode from "qrcode";
 import { z } from "zod";
 
 const router = Router();
@@ -71,6 +72,38 @@ function consumeChallenge(key: string): string | null {
   return entry.challenge;
 }
 
+// ─── Pending Setup Store ─────────────────────────────────
+
+interface PendingSetup {
+  username: string;
+  password: string;
+  totpSecret: string;
+  expiresAt: number;
+}
+
+/** At most 1 pending setup at a time. New request overwrites old. */
+let pendingSetup: { token: string; data: PendingSetup } | null = null;
+
+function storePendingSetup(data: PendingSetup): string {
+  const token = randomBytes(32).toString("hex");
+  pendingSetup = {
+    token,
+    data: { ...data, expiresAt: Date.now() + 5 * 60 * 1000 },
+  };
+  return token;
+}
+
+function consumePendingSetup(token: string): PendingSetup | null {
+  if (!pendingSetup || pendingSetup.token !== token) return null;
+  if (pendingSetup.data.expiresAt < Date.now()) {
+    pendingSetup = null;
+    return null;
+  }
+  const data = pendingSetup.data;
+  pendingSetup = null;
+  return data;
+}
+
 // ─── Schemas ──────────────────────────────────────────────
 
 const loginSchema = z.object({
@@ -83,6 +116,25 @@ const reauthSchema = z.object({
   password: z.string().min(1),
   totpCode: z.string().length(6),
 });
+
+const setupSchema = z.object({
+  username: z.string().min(1, "Username is required").max(50),
+  password: z.string().min(12, "Password must be at least 12 characters"),
+});
+
+const setupVerifySchema = z.object({
+  setupToken: z.string().min(1),
+  totpCode: z.string().length(6),
+});
+
+function validatePassword(pw: string): string | null {
+  if (pw.length < 12) return "Must be at least 12 characters";
+  if (!/[A-Z]/.test(pw)) return "Must contain an uppercase letter";
+  if (!/[a-z]/.test(pw)) return "Must contain a lowercase letter";
+  if (!/[0-9]/.test(pw)) return "Must contain a number";
+  if (!/[^A-Za-z0-9]/.test(pw)) return "Must contain a special character";
+  return null;
+}
 
 // ─── Helpers ──────────────────────────────────────────────
 
