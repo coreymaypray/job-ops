@@ -5,6 +5,7 @@
 import { logger } from "@infra/logger";
 import type { Job } from "@shared/types";
 import { getSetting } from "../repositories/settings";
+import { resolveLlmConfig } from "./llm/resolve-config";
 import { LlmService } from "./llm/service";
 import type { JsonSchemaDefinition } from "./llm/types";
 import { stripMarkdownCodeFences } from "./llm/utils/json";
@@ -88,23 +89,19 @@ export async function scoreJobSuitability(
   job: Job,
   profile: Record<string, unknown>,
 ): Promise<SuitabilityResult> {
-  const [overrideModel, overrideModelScorer, settings] = await Promise.all([
-    getSetting("model"),
+  const [overrideModelScorer, settings, llmConfig] = await Promise.all([
     getSetting("modelScorer"),
     getEffectiveSettings(),
+    resolveLlmConfig(),
   ]);
-  // Precedence: Scorer-specific override > Global override > Env var > Default
-  const model =
-    overrideModelScorer ||
-    overrideModel ||
-    process.env.MODEL ||
-    "google/gemini-3-flash-preview";
+  // Precedence: Scorer-specific override > resolved global model
+  const model = overrideModelScorer || llmConfig.model;
 
   const prompt = buildScoringPrompt(job, sanitizeProfileForPrompt(profile), {
     instructions: settings.scoringInstructions?.value ?? "",
   });
 
-  const llm = new LlmService();
+  const llm = new LlmService(llmConfig.serviceOptions);
   const result = await llm.callJson<{ score: number; reason: string }>({
     model,
     messages: [{ role: "user", content: prompt }],

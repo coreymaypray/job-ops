@@ -19,7 +19,13 @@ export function buildHeaders(args: {
     "Content-Type": "application/json",
   };
 
-  if (args.apiKey) {
+  if (args.provider === "anthropic") {
+    // Anthropic uses x-api-key header instead of Bearer token
+    if (args.apiKey) {
+      headers["x-api-key"] = args.apiKey;
+    }
+    headers["anthropic-version"] = "2023-06-01";
+  } else if (args.apiKey) {
     headers.Authorization = `Bearer ${args.apiKey}`;
   }
 

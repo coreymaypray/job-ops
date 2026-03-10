@@ -4,7 +4,7 @@
 
 import { logger } from "@infra/logger";
 import type { ManualJobDraft } from "@shared/types";
-import { getSetting } from "../repositories/settings";
+import { resolveLlmConfig } from "./llm/resolve-config";
 import { LlmService } from "./llm/service";
 import type { JsonSchemaDefinition } from "./llm/types";
 
@@ -94,12 +94,11 @@ const MANUAL_JOB_SCHEMA: JsonSchemaDefinition = {
 export async function inferManualJobDetails(
   jobDescription: string,
 ): Promise<ManualJobInferenceResult> {
-  const overrideModel = await getSetting("model");
-  const model =
-    overrideModel || process.env.MODEL || "google/gemini-3-flash-preview";
+  const llmConfig = await resolveLlmConfig();
+  const model = llmConfig.model;
   const prompt = buildInferencePrompt(jobDescription);
 
-  const llm = new LlmService();
+  const llm = new LlmService(llmConfig.serviceOptions);
   const result = await llm.callJson<ManualJobApiResponse>({
     model,
     messages: [{ role: "user", content: prompt }],

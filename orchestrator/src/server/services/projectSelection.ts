@@ -3,6 +3,7 @@
  */
 
 import { getSetting } from "../repositories/settings";
+import { resolveLlmConfig } from "./llm/resolve-config";
 import { LlmService } from "./llm/service";
 import type { JsonSchemaDefinition } from "./llm/types";
 import type { ResumeProjectSelectionItem } from "./resumeProjects";
@@ -35,16 +36,12 @@ export async function pickProjectIdsForJob(args: {
   const eligibleIds = new Set(args.eligibleProjects.map((p) => p.id));
   if (eligibleIds.size === 0) return [];
 
-  const [overrideModel, overrideModelProjectSelection] = await Promise.all([
-    getSetting("model"),
+  const [overrideModelProjectSelection, llmConfig] = await Promise.all([
     getSetting("modelProjectSelection"),
+    resolveLlmConfig(),
   ]);
-  // Precedence: Project-specific override > Global override > Env var > Default
-  const model =
-    overrideModelProjectSelection ||
-    overrideModel ||
-    process.env.MODEL ||
-    "google/gemini-3-flash-preview";
+  // Precedence: Project-specific override > resolved global model
+  const model = overrideModelProjectSelection || llmConfig.model;
 
   const prompt = buildProjectSelectionPrompt({
     jobDescription: args.jobDescription,
@@ -52,7 +49,7 @@ export async function pickProjectIdsForJob(args: {
     desiredCount,
   });
 
-  const llm = new LlmService();
+  const llm = new LlmService(llmConfig.serviceOptions);
   const result = await llm.callJson<{ selectedProjectIds: string[] }>({
     model,
     messages: [{ role: "user", content: prompt }],
