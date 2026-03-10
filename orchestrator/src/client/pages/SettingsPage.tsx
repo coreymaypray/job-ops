@@ -18,6 +18,7 @@ import { EnvironmentSettingsSection } from "@client/pages/settings/components/En
 import { ModelSettingsSection } from "@client/pages/settings/components/ModelSettingsSection";
 import { ReactiveResumeSection } from "@client/pages/settings/components/ReactiveResumeSection";
 import { ScoringSettingsSection } from "@client/pages/settings/components/ScoringSettingsSection";
+import { SecuritySettingsSection } from "@client/pages/settings/components/SecuritySettingsSection";
 import { TracerLinksSettingsSection } from "@client/pages/settings/components/TracerLinksSettingsSection";
 import { WebhooksSection } from "@client/pages/settings/components/WebhooksSection";
 import {
@@ -1017,6 +1018,7 @@ export const SettingsPage: React.FC = () => {
             isCreatingBackup={isCreatingBackup}
             isDeletingBackup={isDeletingBackup}
           />
+          <SecuritySettingsSection />
           <DangerZoneSection
             statusesToClear={statusesToClear}
             toggleStatusToClear={toggleStatusToClear}
