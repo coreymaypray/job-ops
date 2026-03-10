@@ -18,6 +18,7 @@ import { EnvironmentSettingsSection } from "@client/pages/settings/components/En
 import { ModelSettingsSection } from "@client/pages/settings/components/ModelSettingsSection";
 import { ReactiveResumeSection } from "@client/pages/settings/components/ReactiveResumeSection";
 import { ScoringSettingsSection } from "@client/pages/settings/components/ScoringSettingsSection";
+import { SecuritySettingsSection } from "@client/pages/settings/components/SecuritySettingsSection";
 import { TracerLinksSettingsSection } from "@client/pages/settings/components/TracerLinksSettingsSection";
 import { WebhooksSection } from "@client/pages/settings/components/WebhooksSection";
 import {
@@ -379,9 +380,8 @@ export const SettingsPage: React.FC = () => {
   } = useTracerReadiness();
 
   const methods = useForm<UpdateSettingsInput>({
-    resolver: zodResolver(
-      updateSettingsSchema,
-    ) as Resolver<UpdateSettingsInput>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- zod@3.25 exposes v4 internals that confuse @hookform/resolvers overloads
+    resolver: zodResolver(updateSettingsSchema as any) as Resolver<UpdateSettingsInput>,
     mode: "onChange",
     defaultValues: DEFAULT_FORM_VALUES,
   });
@@ -1017,6 +1017,7 @@ export const SettingsPage: React.FC = () => {
             isCreatingBackup={isCreatingBackup}
             isDeletingBackup={isDeletingBackup}
           />
+          <SecuritySettingsSection />
           <DangerZoneSection
             statusesToClear={statusesToClear}
             toggleStatusToClear={toggleStatusToClear}

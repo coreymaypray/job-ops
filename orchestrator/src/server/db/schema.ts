@@ -20,6 +20,7 @@ import {
 } from "@shared/types";
 import { sql } from "drizzle-orm";
 import {
+  blob,
   index,
   integer,
   real,
@@ -435,6 +436,72 @@ export const tracerClickEvents = sqliteTable(
   }),
 );
 
+export const admin = sqliteTable("admin", {
+  id: text("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  totpSecret: text("totp_secret").notNull(),
+  failedAttempts: integer("failed_attempts").notNull().default(0),
+  lockedUntil: integer("locked_until", { mode: "number" }),
+  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
+});
+
+export const passkeys = sqliteTable(
+  "passkeys",
+  {
+    id: text("id").primaryKey(),
+    adminId: text("admin_id")
+      .notNull()
+      .references(() => admin.id, { onDelete: "cascade" }),
+    credentialId: text("credential_id").notNull().unique(),
+    publicKey: blob("public_key", { mode: "buffer" }).notNull(),
+    counter: integer("counter").notNull().default(0),
+    deviceType: text("device_type").notNull().default("singleDevice"),
+    backedUp: integer("backed_up", { mode: "boolean" }).notNull().default(false),
+    transports: text("transports"),
+    friendlyName: text("friendly_name"),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => ({
+    adminIdIndex: index("idx_passkeys_admin_id").on(table.adminId),
+  }),
+);
+
+export const refreshTokens = sqliteTable(
+  "refresh_tokens",
+  {
+    id: text("id").primaryKey(),
+    adminId: text("admin_id")
+      .notNull()
+      .references(() => admin.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: integer("expires_at", { mode: "number" }).notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => ({
+    adminIdIndex: index("idx_refresh_tokens_admin_id").on(table.adminId),
+    expiresAtIndex: index("idx_refresh_tokens_expires_at").on(table.expiresAt),
+  }),
+);
+
+export const auditLog = sqliteTable(
+  "audit_log",
+  {
+    id: text("id").primaryKey(),
+    action: text("action").notNull(),
+    adminId: text("admin_id"),
+    ip: text("ip"),
+    userAgent: text("user_agent"),
+    metadata: text("metadata", { mode: "json" }),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => ({
+    actionIndex: index("idx_audit_log_action").on(table.action),
+    createdAtIndex: index("idx_audit_log_created_at").on(table.createdAt),
+  }),
+);
+
 export type JobRow = typeof jobs.$inferSelect;
 export type NewJobRow = typeof jobs.$inferInsert;
 export type StageEventRow = typeof stageEvents.$inferSelect;
@@ -469,3 +536,11 @@ export type TracerLinkRow = typeof tracerLinks.$inferSelect;
 export type NewTracerLinkRow = typeof tracerLinks.$inferInsert;
 export type TracerClickEventRow = typeof tracerClickEvents.$inferSelect;
 export type NewTracerClickEventRow = typeof tracerClickEvents.$inferInsert;
+export type AdminRow = typeof admin.$inferSelect;
+export type NewAdminRow = typeof admin.$inferInsert;
+export type PasskeyRow = typeof passkeys.$inferSelect;
+export type NewPasskeyRow = typeof passkeys.$inferInsert;
+export type RefreshTokenRow = typeof refreshTokens.$inferSelect;
+export type NewRefreshTokenRow = typeof refreshTokens.$inferInsert;
+export type AuditLogRow = typeof auditLog.$inferSelect;
+export type NewAuditLogRow = typeof auditLog.$inferInsert;
