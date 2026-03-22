@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Intake — Shatiya</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    color: #e0e0e0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .header {
+    text-align: center;
+    padding: 30px 0 20px;
+  }
+  .header h1 {
+    font-size: 1.6rem;
+    color: #e6a8d7;
+    margin-bottom: 6px;
+  }
+  .header p {
+    color: #a0a0b8;
+    font-size: 0.95rem;
+  }
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+  .card h2 {
+    font-size: 1.1rem;
+    color: #e6a8d7;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(230,168,215,0.2);
+  }
+  .field {
+    margin-bottom: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    color: #b0b0c8;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: #e6a8d7;
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field select option { background: #1a1a2e; color: #fff; }
+  .path-chooser {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .path-option {
+    padding: 14px 12px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+  .path-option:hover { border-color: rgba(230,168,215,0.4); }
+  .path-option.selected {
+    border-color: #e6a8d7;
+    background: rgba(230,168,215,0.12);
+  }
+  .path-option input { display: none; }
+  .path-option .icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .skill-tag {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .skill-tag:hover { border-color: rgba(230,168,215,0.4); }
+  .skill-tag.selected {
+    border-color: #e6a8d7;
+    background: rgba(230,168,215,0.15);
+    color: #e6a8d7;
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #e6a8d7, #c77dba);
+    color: #1a1a2e;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(230,168,215,0.3); }
+  .submit-btn:active { transform: translateY(0); }
+  .confirmation {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .confirmation .check {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: rgba(230,168,215,0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  .confirmation h2 { color: #e6a8d7; margin-bottom: 12px; font-size: 1.4rem; }
+  .confirmation p { color: #a0a0b8; line-height: 1.6; }
+  .section-num {
+    display: inline-block;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(230,168,215,0.2);
+    color: #e6a8d7;
+    text-align: center;
+    line-height: 24px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Your Next Move Starts Here</h1>
+    <p>Quick intake — takes about 5 minutes</p>
+  </div>
+
+  <form id="intakeForm">
+
+    <!-- Section 1: Basic Info (Pre-filled) -->
+    <div class="card">
+      <h2><span class="section-num">1</span> About You</h2>
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" name="name" value="Shatiya" required>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input type="tel" name="phone" value="" placeholder="Your phone number">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" value="" placeholder="Your email">
+      </div>
+      <div class="field">
+        <label>City / Area</label>
+        <input type="text" name="city" value="" placeholder="Your city">
+      </div>
+    </div>
+
+    <!-- Section 2: Your Path -->
+    <div class="card">
+      <h2><span class="section-num">2</span> What's Next for You?</h2>
+      <p style="color:#a0a0b8; font-size:0.85rem; margin-bottom:14px;">Pick the one that feels right — no wrong answer.</p>
+      <div class="path-chooser">
+        <label class="path-option" onclick="selectPath(this)">
+          <input type="radio" name="path" value="job">
+          <span class="icon">💼</span> Find a Job
+        </label>
+        <label class="path-option" onclick="selectPath(this)">
+          <input type="radio" name="path" value="options">
+          <span class="icon">🔍</span> Keep Options Open
+        </label>
+        <label class="path-option" onclick="selectPath(this)">
+          <input type="radio" name="path" value="grow">
+          <span class="icon">📈</span> Grow My Business
+        </label>
+        <label class="path-option" onclick="selectPath(this)">
+          <input type="radio" name="path" value="unsure">
+          <span class="icon">🤔</span> Not Sure Yet
+        </label>
+      </div>
+    </div>
+
+    <!-- Section 3: Current Situation -->
+    <div class="card">
+      <h2><span class="section-num">3</span> Your Current Situation</h2>
+      <div class="field">
+        <label>Business / Current Role</label>
+        <input type="text" name="business" value="Charmgurl Beauty Bar — Owner" placeholder="e.g. Charmgurl Beauty Bar — Owner">
+      </div>
+      <div class="field">
+        <label>How long have you been doing this?</label>
+        <input type="text" name="experience_length" placeholder="e.g. 3 years">
+      </div>
+      <div class="field">
+        <label>What does a typical day/week look like for you?</label>
+        <textarea name="typical_day" placeholder="Describe your routine — clients, tasks, hours, etc."></textarea>
+      </div>
+    </div>
+
+    <!-- Section 4: Skills & Strengths -->
+    <div class="card">
+      <h2><span class="section-num">4</span> Skills & Strengths</h2>
+      <p style="color:#a0a0b8; font-size:0.85rem; margin-bottom:14px;">Tap all that apply to you.</p>
+      <div class="skills-grid" id="skillsGrid">
+        <span class="skill-tag" onclick="toggleSkill(this)">Hair Styling</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Makeup</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Nails</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Lashes</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Customer Service</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Social Media</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Scheduling</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Inventory</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Budgeting</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Team Management</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Sales</span>
+        <span class="skill-tag" onclick="toggleSkill(this)">Marketing</span>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>Anything else you're good at?</label>
+        <input type="text" name="other_skills" placeholder="Type here...">
+      </div>
+    </div>
+
+    <!-- Section 5: Goals -->
+    <div class="card">
+      <h2><span class="section-num">5</span> Goals & Dreams</h2>
+      <div class="field">
+        <label>Where do you see yourself in 6 months?</label>
+        <textarea name="goals_6mo" placeholder="Be honest — there's no wrong answer."></textarea>
+      </div>
+      <div class="field">
+        <label>What would your dream situation look like?</label>
+        <textarea name="dream" placeholder="Think big."></textarea>
+      </div>
+    </div>
+
+    <!-- Section 6: Availability & Logistics -->
+    <div class="card">
+      <h2><span class="section-num">6</span> Availability & Logistics</h2>
+      <div class="field">
+        <label>What's your availability?</label>
+        <select name="availability">
+          <option value="">Choose one...</option>
+          <option value="full-time">Full-time (40+ hrs/week)</option>
+          <option value="part-time">Part-time (20-30 hrs/week)</option>
+          <option value="flexible">Flexible / Gig schedule</option>
+          <option value="evenings-weekends">Evenings & Weekends only</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Do you have reliable transportation?</label>
+        <select name="transportation">
+          <option value="">Choose one...</option>
+          <option value="own-car">Yes — own car</option>
+          <option value="shared">Shared / sometimes</option>
+          <option value="public-transit">Public transit</option>
+          <option value="need-help">Need help with this</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Any certifications or licenses?</label>
+        <input type="text" name="certifications" placeholder="e.g. Cosmetology license, food handler, etc.">
+      </div>
+    </div>
+
+    <!-- Section 7: Anything Else -->
+    <div class="card">
+      <h2><span class="section-num">7</span> Anything Else?</h2>
+      <div class="field">
+        <label>What's the biggest thing holding you back right now?</label>
+        <textarea name="blockers" placeholder="Be real — no judgment here."></textarea>
+      </div>
+      <div class="field">
+        <label>Anything else you want us to know?</label>
+        <textarea name="anything_else" placeholder="Optional — whatever's on your mind."></textarea>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn">Submit My Info</button>
+  </form>
+
+  <!-- Confirmation Screen -->
+  <div class="confirmation" id="confirmation">
+    <div class="check">✓</div>
+    <h2>You're All Set, Shatiya!</h2>
+    <p>Your info has been received.<br>We'll use this to build your resume and career strategy — personalized to you and Charmgurl Beauty Bar.</p>
+    <p style="margin-top:20px; color:#e6a8d7; font-weight:600;">Next steps are coming your way soon.</p>
+  </div>
+
+</div>
+
+<script>
+function selectPath(el) {
+  document.querySelectorAll('.path-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+function toggleSkill(el) {
+  el.classList.toggle('selected');
+}
+
+document.getElementById('intakeForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  // Gather form data
+  const formData = new FormData(this);
+  const data = Object.fromEntries(formData.entries());
+
+  // Gather selected skills
+  const skills = [];
+  document.querySelectorAll('.skill-tag.selected').forEach(s => skills.push(s.textContent));
+  data.skills = skills;
+
+  // Log data (in production this would POST to an API)
+  console.log('Intake form submitted:', JSON.stringify(data, null, 2));
+
+  // Show confirmation
+  this.style.display = 'none';
+  document.getElementById('confirmation').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>
